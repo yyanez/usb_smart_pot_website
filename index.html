@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sensor Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>📊 Sensor Dashboard</h2>
+  <canvas id="myChart" width="600" height="400"></canvas>
+
+  <script type="module">
+    // 🚨 Reemplaza con tus credenciales
+    const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
+    const SUPABASE_KEY = "TU_ANON_KEY";
+
+    // Obtener los últimos 50 registros
+    async function fetchData() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/sensor_data?order=timestamp.desc&limit=50`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      return await res.json();
+    }
+
+    async function renderChart() {
+      const data = await fetchData();
+
+      const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString()).reverse();
+      const soilHumidity = data.map(d => d.soil_humidity).reverse();
+      const soilTemp = data.map(d => d.soil_temperature).reverse();
+      const ambTemp = data.map(d => d.ambient_temperature).reverse();
+      const ambHumidity = data.map(d => d.ambient_relative_humidity).reverse();
+
+      const ctx = document.getElementById('myChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Soil Humidity', data: soilHumidity, borderColor: 'blue', fill: false },
+            { label: 'Soil Temp', data: soilTemp, borderColor: 'red', fill: false },
+            { label: 'Ambient Temp', data: ambTemp, borderColor: 'orange', fill: false },
+            { label: 'Ambient Humidity', data: ambHumidity, borderColor: 'green', fill: false }
+          ]
+        }
+      });
+    }
+
+    renderChart();
+  </script>
+</body>
+</html>
